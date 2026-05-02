@@ -1,0 +1,7 @@
+language: cpp
+
+script:
+  - cmake
+-H. -B_build -DCMAKE_INSTALL_PREFIX=_install -DBUILD_TESTS=ON -DCMAKE_CXX_FLAGS="-Wno-error=maybe-uninitialized"
+  - cmake --build _build --target install
+  - cmake --build _build --target test -- ARGS=--verbose
