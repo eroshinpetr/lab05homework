@@ -1,4 +1,5 @@
 [![Coverage Status](https://coveralls.io/repos/github/eroshinpetr/lab05homework/badge.svg?branch=main)](https://coveralls.io/github/eroshinpetr/lab05homework?branch=main)
+```sh
 Running tests...
 UpdateCTestConfiguration  from :/home/vboxuser/workspace/projects/lab05/_build/DartConfiguration.tcl
 UpdateCTestConfiguration  from :/home/vboxuser/workspace/projects/lab05/_build/DartConfiguration.tcl
@@ -115,5 +116,6 @@ Balance 2 is 500
 [----------] 10 tests from Transaction (0 ms total)
 
 [----------] Global test environment tear-down
+```
 [==========] 15 tests from 2 test cases ran. (0 ms total)
 [  PASSED  ] 15 tests.
