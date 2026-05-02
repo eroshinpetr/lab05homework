@@ -1,40 +1,48 @@
-name: CMake CI
+name: CMake Tests
 
 on:
   push:
+    branches:
+      - master
+      - main
   pull_request:
+    branches:
+      - master
+      - main
 
 jobs:
-  linux:
+  build-and-test:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        cxx: [g++, clang++]
-    env:
-      CXX: ${{ matrix.cxx }}
-    steps:
-      - uses: actions/checkout@v5
-      - name: Configure
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-      - name: Build
-        run: cmake --build build --config Release
-      - name: Test hello_world
-        run: ./build/hello_world_application/hello_world
-      - name: Test solver
-        run: echo "1 5 6" | ./build/solver_application/solver
 
-  windows:
-    runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v5
-      - name: Configure
-        run: cmake -S . -B build -G "Visual Studio 17 2022" -A x64
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake g++ make lcov
+
+      - name: Configure CMake
+        run: |
+          cmake -H. -B_build \
+            -DBUILD_TESTS=ON \
+            -DENABLE_COVERAGE=ON \
+            -DCMAKE_CXX_FLAGS="-Wno-error=maybe-uninitialized"
+
       - name: Build
-        run: cmake --build build --config Release
-      - name: Test hello_world
-        run: .\build\hello_world_application\Release\hello_world.exe
-        shell: cmd
-      - name: Test solver
-        run: echo 1 5 6 | .\build\solver_application\Release\solver.exe
-        shell: cmd
+        run: |
+          cmake --build _build
+
+      - name: Run tests
+        run: |
+          cmake --build _build --target test -- ARGS=--verbose
+          ./_build/check
+
+      - name: Generate coverage report
+        run: |
+          lcov --capture --directory _build --output-file coverage.info
+          lcov --remove coverage.info '/usr/*' '*/third-party/*' '*/tests/*' --output-file coverage.info
+          lcov --list coverage.info
