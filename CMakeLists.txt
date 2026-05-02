@@ -1,75 +1,42 @@
 cmake_minimum_required(VERSION 3.4)
 
-project(print)
+project(banking)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-option(BUILD_EXAMPLES "Build examples" OFF)
 option(BUILD_TESTS "Build tests" OFF)
+option(ENABLE_COVERAGE "Enable coverage flags" OFF)
 
-add_library(${PROJECT_NAME} STATIC
-  ${CMAKE_CURRENT_SOURCE_DIR}/sources/print.cpp
-)
-
-target_include_directories(${PROJECT_NAME}
-  PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>
-)
-
-if(BUILD_EXAMPLES)
-  add_executable(example
-    ${CMAKE_CURRENT_SOURCE_DIR}/examples/example.cpp
-  )
-
-  target_link_libraries(example
-    ${PROJECT_NAME}
-  )
-endif()
-
-install(TARGETS ${PROJECT_NAME}
-  EXPORT ${PROJECT_NAME}-config
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin
-)
-
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ DESTINATION include)
-
-install(EXPORT ${PROJECT_NAME}-config DESTINATION cmake)
+add_subdirectory(banking)
 
 if(BUILD_TESTS)
   enable_testing()
 
   add_subdirectory(third-party/gtest)
 
-  if(TARGET gtest)
-    target_compile_options(gtest PRIVATE -Wno-error=maybe-uninitialized)
-  endif()
-
-  if(TARGET gtest_main)
-    target_compile_options(gtest_main PRIVATE -Wno-error=maybe-uninitialized)
-  endif()
-
-  if(TARGET gmock)
-    target_compile_options(gmock PRIVATE -Wno-error=maybe-uninitialized)
-  endif()
-
-  if(TARGET gmock_main)
-    target_compile_options(gmock_main PRIVATE -Wno-error=maybe-uninitialized)
-  endif()
-
-  file(GLOB ${PROJECT_NAME}_TEST_SOURCES tests/*.cpp)
+  foreach(target gtest gtest_main gmock gmock_main)
+    if(TARGET ${target})
+      target_compile_options(${target} PRIVATE -Wno-error=maybe-uninitialized)
+    endif()
+  endforeach()
 
   add_executable(check
-    ${${PROJECT_NAME}_TEST_SOURCES}
+    tests/account_test.cpp
+    tests/transaction_test.cpp
   )
 
   target_link_libraries(check
-    ${PROJECT_NAME}
-    gtest_main
+    banking
+    gmock_main
   )
+
+  if(ENABLE_COVERAGE)
+    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+      target_compile_options(check PRIVATE --coverage -O0 -g)
+      target_link_libraries(check --coverage)
+    endif()
+  endif()
 
   add_test(NAME check COMMAND check)
 endif()

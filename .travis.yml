@@ -1,7 +1,27 @@
 language: cpp
+dist: focal
+compiler: gcc
+
+addons:
+  apt:
+    update: true
+    packages:
+      - cmake
+      - lcov
+      - ruby
+      - ruby-dev
+
+before_script:
+  - git submodule update --init --recursive
 
 script:
-  - cmake
--H. -B_build -DCMAKE_INSTALL_PREFIX=_install -DBUILD_TESTS=ON -DCMAKE_CXX_FLAGS="-Wno-error=maybe-uninitialized"
-  - cmake --build _build --target install
+  - cmake -H. -B_build -DBUILD_TESTS=ON -DENABLE_COVERAGE=ON -DCMAKE_CXX_FLAGS="-Wno-error=maybe-uninitialized"
+  - cmake --build _build
   - cmake --build _build --target test -- ARGS=--verbose
+
+after_success:
+  - lcov --capture --directory _build --output-file coverage.info
+  - lcov --remove coverage.info '/usr/*' '*/third-party/*' '*/tests/*' --output-file coverage.info
+  - lcov --list coverage.info
+  - gem install coveralls-lcov
+  - coveralls-lcov coverage.info

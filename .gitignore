@@ -1,4 +1,8 @@
-*build*/
-*install*/
-*.swp
-.idea/
+_build/
+coverage/
+coverage.info
+*.gcda
+*.gcno
+*.gcov
+file.txt
+.DS_Store
