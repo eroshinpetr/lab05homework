@@ -43,6 +43,16 @@ jobs:
 
       - name: Generate coverage report
         run: |
-          lcov --capture --directory _build --output-file coverage.info
-          lcov --remove coverage.info '/usr/*' '*/third-party/*' '*/tests/*' --output-file coverage.info
+          lcov --capture \
+            --directory _build/banking \
+            --output-file coverage.info \
+            --ignore-errors mismatch,mismatch
+
+          lcov --remove coverage.info \
+            '/usr/*' \
+            '*/third-party/*' \
+            '*/tests/*' \
+            --output-file coverage.info \
+            --ignore-errors unused
+
           lcov --list coverage.info

@@ -18,10 +18,11 @@ script:
   - cmake -H. -B_build -DBUILD_TESTS=ON -DENABLE_COVERAGE=ON -DCMAKE_CXX_FLAGS="-Wno-error=maybe-uninitialized"
   - cmake --build _build
   - cmake --build _build --target test -- ARGS=--verbose
+  - ./_build/check
 
 after_success:
-  - lcov --capture --directory _build --output-file coverage.info
-  - lcov --remove coverage.info '/usr/*' '*/third-party/*' '*/tests/*' --output-file coverage.info
+  - lcov --capture --directory _build/banking --output-file coverage.info --ignore-errors mismatch,mismatch
+  - lcov --remove coverage.info '/usr/*' '*/third-party/*' '*/tests/*' --output-file coverage.info --ignore-errors unused
   - lcov --list coverage.info
   - gem install coveralls-lcov
   - coveralls-lcov coverage.info
